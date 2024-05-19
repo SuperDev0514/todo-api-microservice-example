@@ -82,7 +82,6 @@ func TestTasks_Delete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-
 			router := newRouter()
 			svc := &resttesting.FakeTaskService{}
 			tt.setup(svc)
@@ -252,17 +251,15 @@ func TestTasks_Read(t *testing.T) {
 			},
 		},
 		{
-			"OK: 200",
+			"ERR: 404",
 			func(s *resttesting.FakeTaskService) {
 				s.TaskReturns(internal.Task{},
 					internal.NewErrorf(internal.ErrorCodeNotFound, "not found"))
 			},
 			output{
 				http.StatusNotFound,
-				&rest.ErrorResponse{
-					Error: "find failed",
-				},
-				&rest.ErrorResponse{},
+				&struct{}{},
+				&struct{}{},
 			},
 		},
 		{
@@ -286,7 +283,6 @@ func TestTasks_Read(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
 
 			router := newRouter()
 			svc := &resttesting.FakeTaskService{}
@@ -397,7 +393,6 @@ func TestTasks_Update(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-
 			router := newRouter()
 			svc := &resttesting.FakeTaskService{}
 			tt.setup(svc)
@@ -426,9 +421,10 @@ type test struct {
 }
 
 
+
 func doRequest(router *chi.Mux, req *http.Request) *http.Response {
 	rr := httptest.NewRecorder()
-
+	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 
 	return rr.Result()

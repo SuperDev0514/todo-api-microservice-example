@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 
+
 	"github.com/go-chi/chi/v5"
 
 	"github.com/MarioCarrion/todo-api/internal"
@@ -37,6 +38,7 @@ func NewTaskHandler(svc TaskService) *TaskHandler {
 
 // Register connects the handlers to the router.
 
+
 func (t *TaskHandler) Register(r *chi.Mux) {
 	r.Post("/tasks", t.create)
 	r.Get(fmt.Sprintf("/tasks/{id:%s}", uuidRegEx), t.task)
@@ -68,6 +70,7 @@ type CreateTasksResponse struct {
 	Task Task `json:"task"`
 }
 
+
 func (t *TaskHandler) create(router *gin.Context) {
 	var req CreateTasksRequest
 
@@ -84,6 +87,7 @@ func (t *TaskHandler) create(router *gin.Context) {
 		Dates:       req.Dates.Convert(),
 	})
 	if err != nil {
+
 
 		renderErrorResponse(w, r, "create failed", err)
 
@@ -103,6 +107,7 @@ func (t *TaskHandler) create(router *gin.Context) {
 }
 
 
+
 func (t *TaskHandler) delete(w http.ResponseWriter, r *http.Request) {
 	// NOTE: Safe to ignore error, because it's always defined.
 	id := chi.URLParam(r, "id")
@@ -110,7 +115,8 @@ func (t *TaskHandler) delete(w http.ResponseWriter, r *http.Request) {
 	if err := t.svc.Delete(r.Context(), id); err != nil {
 		renderErrorResponse(w, r, "delete failed", err)
 
-		return
+	if err := t.svc.Delete(router.Request().Context(), id); err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "delete failed")
 	}
 
 
@@ -121,6 +127,7 @@ func (t *TaskHandler) delete(w http.ResponseWriter, r *http.Request) {
 type ReadTasksResponse struct {
 	Task Task `json:"task"`
 }
+
 
 
 func (t *TaskHandler) task(w http.ResponseWriter, r *http.Request) {
@@ -157,6 +164,7 @@ type UpdateTasksRequest struct {
 	Dates       Dates    `json:"dates"`
 }
 
+
 func (t *TaskHandler) update(router *gin.Context) {
 	var req UpdateTasksRequest
 
@@ -173,8 +181,9 @@ func (t *TaskHandler) update(router *gin.Context) {
 	// NOTE: Safe to ignore error, because it's always defined.
 	id := chi.URLParam(r, "id")
 
-	err := t.svc.Update(r.Context(), id, req.Description, req.Priority.Convert(), req.Dates.Convert(), req.IsDone)
+	err := t.svc.Update(router.Request().Context(), id, req.Description, req.Priority.Convert(), req.Dates.Convert(), req.IsDone)
 	if err != nil {
+
 		renderErrorResponse(w, r, "update failed", err)
 
 		return
@@ -201,6 +210,7 @@ type SearchTasksResponse struct {
 	Total int64  `json:"total"`
 }
 
+
 func (t *TaskHandler) search(router *gin.Context) {
 	var req SearchTasksRequest
 
@@ -218,6 +228,7 @@ func (t *TaskHandler) search(router *gin.Context) {
 		priority = &res
 	}
 
+
 	res, err := t.svc.By(router, internal.SearchParams{
 		Description: req.Description,
 		Priority:    priority,
@@ -226,6 +237,7 @@ func (t *TaskHandler) search(router *gin.Context) {
 		Size:        req.Size,
 	})
 	if err != nil {
+
 
 		renderErrorResponse(w, r, "search failed", err)
 

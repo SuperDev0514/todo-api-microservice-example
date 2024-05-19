@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	rv8 "github.com/go-redis/redis/v8"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riandyrn/otelchi"
 	"go.uber.org/zap"
@@ -112,6 +113,7 @@ func run(env, address string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewOTExporter")
 	}
 
+
 	logging := func(c *gin.Context) {
 		logger.Info(c.Request.Method,
 			zap.Time("time", time.Now()),
@@ -126,6 +128,7 @@ func run(env, address string) (<-chan error, error) {
 		DB:            pool,
 		ElasticSearch: esClient,
 		Metrics:       promExporter,
+
 
 		Middlewares:   []func(next http.Handler) http.Handler{otelchi.Middleware("todo-api-server"), logging},
 		Redis:         rdb,
@@ -195,11 +198,13 @@ type serverConfig struct {
 	Memcached     *memcache.Client
 	Metrics       http.Handler
 
+
 	Middlewares   []func(next http.Handler) http.Handler
 	Logger        *zap.Logger
 }
 
 func newServer(conf serverConfig) (*http.Server, error) {
+
 
 	router := chi.NewRouter()
 	router.Use(render.SetContentType(render.ContentTypeJSON))
@@ -234,6 +239,7 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	//-
 
 	fsys, _ := fs.Sub(content, "static")
+
 
 	router.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fsys))))
 
