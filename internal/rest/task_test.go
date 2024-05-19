@@ -6,17 +6,26 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/labstack/echo/v4"
 
 	"github.com/MarioCarrion/todo-api/internal"
 	"github.com/MarioCarrion/todo-api/internal/rest"
 	"github.com/MarioCarrion/todo-api/internal/rest/resttesting"
 )
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.TestMode)
+
+	os.Exit(m.Run())
+}
 
 func TestTasks_Delete(t *testing.T) {
 	t.Parallel()
@@ -36,7 +45,7 @@ func TestTasks_Delete(t *testing.T) {
 	}{
 		{
 			"OK: 200",
-			func(s *resttesting.FakeTaskService) {},
+			func(_ *resttesting.FakeTaskService) {},
 			output{
 				http.StatusOK,
 				&struct{}{},
@@ -70,8 +79,6 @@ func TestTasks_Delete(t *testing.T) {
 	//-
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -177,10 +184,9 @@ func TestTasks_Post(t *testing.T) {
 	//-
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 
 			router := newRouter()
 			svc := &resttesting.FakeTaskService{}
@@ -275,8 +281,6 @@ func TestTasks_Read(t *testing.T) {
 	//-
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -321,7 +325,7 @@ func TestTasks_Update(t *testing.T) {
 	}{
 		{
 			"OK: 200",
-			func(s *resttesting.FakeTaskService) {},
+			func(_ *resttesting.FakeTaskService) {},
 			func() []byte {
 				b, _ := json.Marshal(&rest.UpdateTasksRequest{
 					Description: "update task",
@@ -386,8 +390,6 @@ func TestTasks_Update(t *testing.T) {
 	//-
 
 	for _, tt := range tests {
-		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -418,9 +420,10 @@ type test struct {
 	target   interface{}
 }
 
-func doRequest(router *echo.Echo, req *http.Request) *http.Response {
-	req.Header.Add("content-type", "application/json")
 
+
+func doRequest(router *chi.Mux, req *http.Request) *http.Response {
+	rr := httptest.NewRecorder()
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 
@@ -440,10 +443,9 @@ func assertResponse(t *testing.T, res *http.Response, test test) {
 	}
 }
 
-func newRouter() *echo.Echo {
-	r := echo.New()
-	r.HTTPErrorHandler = rest.HTTPErrorHandler
-	r.Debug = false
+func newRouter() *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	return r
 }
