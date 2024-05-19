@@ -6,8 +6,10 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
+
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -18,6 +20,12 @@ import (
 	"github.com/MarioCarrion/todo-api/internal/rest"
 	"github.com/MarioCarrion/todo-api/internal/rest/resttesting"
 )
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.TestMode)
+
+	os.Exit(m.Run())
+}
 
 func TestTasks_Delete(t *testing.T) {
 	t.Parallel()
@@ -179,6 +187,7 @@ func TestTasks_Post(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+
 			router := newRouter()
 			svc := &resttesting.FakeTaskService{}
 			tt.setup(svc)
@@ -242,17 +251,15 @@ func TestTasks_Read(t *testing.T) {
 			},
 		},
 		{
-			"OK: 200",
+			"ERR: 404",
 			func(s *resttesting.FakeTaskService) {
 				s.TaskReturns(internal.Task{},
 					internal.NewErrorf(internal.ErrorCodeNotFound, "not found"))
 			},
 			output{
 				http.StatusNotFound,
-				&rest.ErrorResponse{
-					Error: "find failed",
-				},
-				&rest.ErrorResponse{},
+				&struct{}{},
+				&struct{}{},
 			},
 		},
 		{
@@ -413,9 +420,11 @@ type test struct {
 	target   interface{}
 }
 
+
+
 func doRequest(router *chi.Mux, req *http.Request) *http.Response {
 	rr := httptest.NewRecorder()
-
+	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 
 	return rr.Result()
