@@ -35,6 +35,7 @@ require (
 	go.opentelemetry.io/otel/exporters/prometheus v0.47.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.11.2
 
+
 	go.opentelemetry.io/otel/trace v1.25.0
 	go.uber.org/zap v1.24.0
 	goa.design/model v1.8.0
@@ -65,6 +66,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fatih/color v1.7.0 // indirect
+
 
   github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
